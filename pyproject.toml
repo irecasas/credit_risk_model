@@ -1,0 +1,42 @@
+[tool.poetry]
+name = "credit-risk-model"
+version = "0.0.0"
+description = "Repository that creates a model that predicts the probability of default of the bank's customers. "
+authors = ["Irene Casas"]
+packages = [{include = "ds_core", from = "src"}]
+
+[tool.poe.tasks]
+"init" = "sh -c 'pre-commit install && pre-commit run --all-files'"
+test = "python -m unittest discover tests"
+"test:unit" = "poe test tests/"
+"test:coverage" = "sh -c 'poe coverage:erase && poe coverage:run ; poe coverage:combine ; poe coverage:report'"
+"test:coverage:html" = "sh -c 'poe coverage:erase && poe coverage:run ; poe coverage:combine ; poe coverage:report ; poe coverage:report:html'"
+# Internal poe tasks
+"coverage:erase" = "coverage erase"
+"coverage:run" = "coverage run -m unittest discover"
+"coverage:combine" = "coverage combine"
+"coverage:report" = "coverage report -m"
+"coverage:report:html" = "coverage html"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+scikit-learn = "^1.2.2"
+
+[[tool.poetry.source]]
+name = "PyPI"
+priority = "primary"
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^6.0.0"
+coverage = "7.1.0"
+black = "^23.3.0"
+twine = "^4.0.2"
+poethepoet = "0.18.0"
+pre-commit = "^3.3.3"
+faker = "^16.9.0"
+isort = "^5.12.0"
+autoflake = "^2.1.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
