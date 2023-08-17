@@ -80,22 +80,27 @@ def splitting_data(df: pd.DataFrame):
 
 def initial_cleaning(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
-    Name: initial_cleaning
 
-    Description: Eliminates variables with unique values
-
-    Parameters: - df <pandas.DataFrame>
-
-    Return: - df <pandas.DataFrame>
+    :param dataframe:
+    :return:
     """
-    a = dataframe.shape[1]
+
+    a = dataframe.shape[0]
+    b = dataframe.shape[1]
+    lim_50 = a * 50 / 100
+
+    for i in dataframe:
+        if pd.isnull(dataframe[i]).sum() > lim_50:
+            dataframe.drop(i, 1, inplace=True)
+            print("The variable ", i, " is dropped because it has more than 50% nulls")
+
     for i in dataframe:
         if len(dataframe[i].unique()) == 1:
             dataframe.drop(i, 1, inplace=True)
             print("The variable ", i, " is eliminated because it has a unique value")
     print(
-        str(a - dataframe.shape[1])
-        + " variables have been eliminated as they have unique values"
+        str(b - dataframe.shape[1])
+        + " variables have been eliminated"
     )
     print(dataframe.shape)
 
