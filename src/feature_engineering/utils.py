@@ -1,10 +1,7 @@
-from typing import Optional
+from statistics import mode
 
 import pandas as pd
-import regex
 import statsmodels.api as sm
-from pandas.api.types import is_datetime64_any_dtype as is_datetime
-from pandas.api.types import is_numeric_dtype
 
 from feature_engineering import constants
 
@@ -29,9 +26,7 @@ def splitting_data(df: pd.DataFrame):
     train.drop(
         [
             "mes",
-            "customer_id",
             "cancelled_at",
-            "first_payment_date",
             "egr_over30mob3",
             "egr_mob3",
         ],
@@ -42,9 +37,7 @@ def splitting_data(df: pd.DataFrame):
     validation.drop(
         [
             "mes",
-            "customer_id",
             "cancelled_at",
-            "first_payment_date",
             "egr_over30mob3",
             "egr_mob3",
         ],
@@ -55,9 +48,7 @@ def splitting_data(df: pd.DataFrame):
     test.drop(
         [
             "mes",
-            "customer_id",
             "cancelled_at",
-            "first_payment_date",
             "egr_over30mob3",
             "egr_mob3",
         ],
@@ -88,9 +79,11 @@ def initial_cleaning(dataframe: pd.DataFrame) -> pd.DataFrame:
     a = dataframe.shape[0]
     b = dataframe.shape[1]
     lim_50 = a * 50 / 100
+    lim_95 = a * 50 / 100
+    j = 'cancelled_at'
 
     for i in dataframe:
-        if pd.isnull(dataframe[i]).sum() > lim_50:
+        if (pd.isnull(dataframe[i]).sum() > lim_50) and (str(i) != j):
             dataframe.drop(i, 1, inplace=True)
             print("The variable ", i, " is dropped because it has more than 50% nulls")
 
@@ -98,6 +91,12 @@ def initial_cleaning(dataframe: pd.DataFrame) -> pd.DataFrame:
         if len(dataframe[i].unique()) == 1:
             dataframe.drop(i, 1, inplace=True)
             print("The variable ", i, " is eliminated because it has a unique value")
+
+    for i in dataframe:
+        if (pd.isnull(dataframe[i]).sum() > lim_95) and (str(i) != j):
+            dataframe.drop(i, 1, inplace=True)
+            print("The variable ", i, " is dropped because it has more than 95% nulls")
+
     print(
         str(b - dataframe.shape[1])
         + " variables have been eliminated"
@@ -105,29 +104,6 @@ def initial_cleaning(dataframe: pd.DataFrame) -> pd.DataFrame:
     print(dataframe.shape)
 
     return dataframe
-
-
-def correlation_matrix(
-    df: pd.DataFrame, list_vars: Optional[list] = []
-) -> pd.DataFrame:
-    """
-    Name: correlation matrix
-
-    Description: Function that returns the correlation matrix between
-    two variables according to Pearson's method.
-    If the absolute value of the Pearson coefficient between two variables exceeds 0.8,
-    collinearity exists.
-
-    Parameters: - df <pandas.DataFrame>
-
-    Return: - df <pandas.DataFrame>
-    """
-
-    cols_names = df.columns
-    cols_names.remove(list_vars)
-    df_aux = df[cols_names].corr(method="pearson")
-
-    return df_aux
 
 
 def dtypes_selector(df: pd.DataFrame) -> dict:
@@ -141,146 +117,62 @@ def dtypes_selector(df: pd.DataFrame) -> dict:
         the columns of the data set could be divided into
         and whose values are the corresponding columns.
     """
-    feature_types = {}
-    dt_features, string_features, bool_features, numeric_features = [], [], [], []
-
-    string_features = df.select_dtypes(
-        exclude=["datetimetz", "datetime", "timedelta", "number", "bool"]
-    ).columns.tolist()
-    dt_cols0 = df.select_dtypes(
-        include=["datetimetz", "datetime", "timedelta"]
-    ).columns.tolist()
-    num_cols = df.select_dtypes(
-        include=["number", "int", "float", "float64"]
-    ).columns.tolist()
-    bool_features = df.select_dtypes(include=["bool"]).columns.tolist()
-    dt_cols1 = [
-        c
-        for c in df.columns
-        if regex.search(
-            regex.compile(
-                r"(date(time\w*)?|time(stamp)?|firstseen|created(_at)?)$", regex.I
-            ),
-            c,
-        )
-    ]
-    relevant_cols = set(
-        string_features + dt_cols0 + dt_cols1 + num_cols + bool_features
-    )
-    for c in relevant_cols:
-        if is_numeric_dtype(df[c]):
-            numeric_features.append(c)
-        else:
-            if is_datetime(df[c]):
-                dt_features.append(c)
-            else:
-                most_freq_vals = list(map(str, df[c].value_counts().index[:7]))
-                clean_freqs = regex.sub(
-                    regex.compile(r"_*(missing|(np\.)?na?n|none)_*", regex.I),
-                    "",
-                    "__".join(most_freq_vals),
-                ).strip(r"[\s_]+")
-                if regex.search(
-                    r"^\d{2,4}[-\/:]\d{2}[-\/:]\d{2,4}[\s\d\:\.TZ\+]*(__\d{2,4}[-\/\:]\d{2}[-\/\:]\d{2,"
-                    r"4}[\s\d:\.TZ\+]*){5,}$",
-                    clean_freqs,
-                ):
-                    dt_features.append(c)
-                elif len(
-                    regex.findall(
-                        regex.compile(r"(-?\d+|true|false)+", regex.I), clean_freqs
-                    )
-                ) < len(regex.findall(r"[a-z]+", clean_freqs)):
-                    string_features.append(c)
-                elif regex.search(
-                    regex.compile(
-                        "^((true|false|[a-zA-Z]+)__)((true|false)_*)+$", regex.I
-                    ),
-                    clean_freqs,
-                ):
-                    bool_features.append(c)
-                else:
-                    cond0 = (
-                        len(regex.findall(r"-?\d+([\,\.]\d+)?", clean_freqs))
-                        > len(
-                            regex.findall(regex.compile("[a-z]+", regex.I), clean_freqs)
-                        )
-                        + 2
-                    )
-                    cond1 = regex.search(
-                        r"(?<=_|)(([7698|s]\d{8,}|\d{5}|(\d__)+\d_|\d{3,5}X\d{3,5})(\.\d{1,2})?_*){5,}$",
-                        clean_freqs,
-                    )
-                    if cond0 and not cond1:
-                        numeric_features.append(c)
-                    else:
-                        string_features.append(c)
-
-    bool_list = [
-        "rej_reason7_ord",
-        "campaign_completed_ord_bool",
-        "ido_dropout_15d_ord_bool",
-        "ido_completed_15d_ord_bool",
-        "ido_accepted_30d_ord",
-        "ido_cancelled_7d_ord_bool",
-        "ido_rejected_ord",
-        "rej_reason2_ord",
-        "rej_reason5_ord",
-        "campaign_rejected_ord",
-        "ido_rejected_30d_ord",
-        "n_rechazados_ord_48h_bool",
-        "ido_dropout_1d_ord_bool",
-        "campaign_dropout_ord_bool",
-        "rej_reason1_ord",
-        "ido_accepted_7d_ord",
-        "ido_cancelled_30d_ord_bool",
-        "ido_cancelled_ord",
-        "ido_cancelled_1d_ord_bool",
-        "rej_reason6_ord",
-        "ido_accepted_15d_ord",
-        "ido_chargeoff_ord",
-        "ido_dropout_7d_ord_bool",
-        "ido_completed_ord",
-        "ido_dropout_30d_ord_bool",
-        "stripe_ord_max",
-        "ido_total_ord",
-        "campaign_cancelled_ord_bool",
-        "ido_accepted_1d_ord",
-        "ido_dropout_ord",
-        "rej_reason3_ord",
-        "ido_rejected_1d_ord",
-        "ido_rejected_7d_ord",
-        "ido_rejected_15d_ord",
-        "rej_reason4_ord",
-        "ido_accepted_ord",
-        "ido_completed_30d_ord_bool",
-        "n_aceptados_ord_48h_bool",
-        "ido_cancelled_15d_ord_bool",
-        "target",
-    ]
-
-    bool_features = bool_features + bool_list
-    bool_features = list(set(bool_features))
-
-    string_features = string_features + ["merchant_id", "customer_id"]
-    string_features = list(set(string_features))
-
-    for c in relevant_cols:
-        if c in string_features and c in dt_features:
-            string_features.remove(c)
-        elif c in string_features and c in bool_features:
-            string_features.remove(c)
-        elif c in string_features and c in numeric_features:
-            numeric_features.remove(c)
-        elif c in bool_features and c in numeric_features:
-            numeric_features.remove(c)
-        elif c in bool_features and c in string_features:
-            bool_features.remove(c)
-
-    feature_types["datetime"] = dt_features
-    feature_types["string"] = string_features
-    feature_types["boolean"] = bool_features
-    feature_types["numerical"] = numeric_features
+    feature_types = dict(
+        boolean=['is_offline'],
+        binary=['emailage__ip_reputation', 'target',
+                'emailage_response__domainriskcountry_trans',
+                'emailage_response__domaincorporate_trans',
+                'emailage_response__ip_corporateProxy_trans',
+                'emailage_response__ip_anonymousdetected_trans',
+                'emailage_response__domainExists_trans',
+                'emailage_response__ipcountrymatch_trans',
+                'emailage_response__shipforward_trans',
+                'emailage_response__gender_female',
+                'emailage_phone_status',
+                'minfraud_response__ip_address__registered_country__is_in_european_union_trans',
+                'minfraud_response__email__is_disposable_trans',
+                'minfraud_response__email__is_high_risk_trans',
+                'minfraud_response__email__is_free_trans',
+                'minfraud_response__shipping_address__is_postal_in_city_trans',
+                'minfraud_response__shipping_address__is_in_ip_country_trans',
+                'minfraud_response__billing_address__is_postal_in_city_trans',
+                'minfraud_response__billing_address__is_in_ip_country_trans',
+                'minfraud_response__ip_address__traits__is_anonymous_trans',
+                'email_exists',
+                'experian_autonomo_trans',
+                'experian_documento__tipodocumento__descripcion_trans'],
+        numerical_trans=['experian_ResumenCais__FechaAltaOperacionMasAntigua_difference_with_created',
+                         'experian_ResumenCais__FechaMaximoImporteImpagado_difference_with_created',
+                         'experian_ResumenCais__FechaPeorSituacionPagoHistorica_difference_with_created',
+                         'emailage_response__lastVerificationDate_difference_with_created',
+                         'emailage_response__firstVerificationDate_difference_with_created'],
+        category=['emailage_response__status', 'emailage_response__fraudRisk',
+                  'minfraud_response__ip_address__traits__user_type',
+                  'emailage_response__ip_netSpeedCell', 'emailage_response__ip_userType',
+                  'emailage_response__domaincategory',
+                  'minfraud_response__ip_address__traits__organization',
+                  'experian_InformacionDelphi__Nota',
+                  'emailage_response__domainname', 'emailage_response__EAAdvice', 'merchant_id',
+                  'industry_id',
+                  'minfraud_response__ip_address__continent__code',
+                  'emailage_response__phonecarriername',
+                  'emailage_response__domainrisklevel', 'experian_OrigenScore__Codigo',
+                  'emailage_response__domainrelevantinfoID',
+                  'experian_Documento__TipoDocumento__Codigo'],
+        numerical=['minfraud_response__risk_score', 'emailage_response__ip_risklevelid',
+                   'experian_InformacionDelphi__Percentil',
+                   'experian_ResumenCais__NumeroCuotasImpagadas',
+                   'emailage_response__domain_creation_days',
+                   'experian_InformacionDelphi__Puntuacion', 'experian_InformacionDelphi__Decil',
+                   'age', 'emailage_response__EAScore',
+                   'experian_ResumenCais__MaximoImporteImpagado',
+                   'experian_ResumenCais__NumeroOperacionesImpagadas',
+                   'emailage_response__EARiskBandID', 'n_initial_instalments',
+                   'emailage_response__domainrisklevelID',
+                   'experian_ResumenCais__ImporteImpagado', 'principal', 'downpayment_amount',
+                   'experian_InformacionDelphi__ProbabilidadIncumplimientoPorScore',
+                   'emailage_response__first_seen_days',
+                   'annual_percentage_rate'])
 
     return feature_types
 
@@ -292,44 +184,35 @@ def missing_values(df: pd.DataFrame, dict: dict) -> pd.DataFrame:
             df[c] = df[c].astype("object").fillna("0").astype(int)
             df[c] = df[c].fillna(0).astype(int)
         elif c in dict["numerical"]:
-            df[c] = df[c].astype(float).fillna(-9999)
+            df[c] = df[c].astype(float)
+            inf_mode = mode(df[c])
+            df[c] = df[c].fillna(inf_mode)
+        elif c in dict["binary"]:
+            df[c] = df[c].astype(int)
+            df[c] = df[c].fillna(0).astype(int)
+        elif c in dict["numerical_trans"]:
+            df[c] = df[c].astype(int)
+            df[c] = df[c].fillna(0).astype(int)
 
 
-def age_customer(df: pd.DataFrame, date_birthday: str, date_init: str):
+def corr_matrix(df: pd.DataFrame):
     """
-
+    :type dict: object
     :param df:
-    :param date_birthday:
-    :param date_init:
+    :param dict:
     :return:
     """
-    df["birthday"] = pd.to_datetime(df["birthday"], format="%Y-%m-%d").dt.date
-    df["created_at"] = pd.to_datetime(df["created_at"], format="%Y-%m-%d").dt.date
-    df["age"] = ((df["created_at"] - df["birthday"]).dt.days) / 365
-    df["age"] = df["age"].fillna(0)
-    df.drop(["birthday"], axis=1, inplace=True)
-
-
-def corr_matrix(df: pd.DataFrame, var_remove: Optional):
-    """
-
-    :param df:
-    :param var_remove:
-    :return:
-    """
-    list_corr = df.select_dtypes(
-        exclude=["datetime", "timedelta", "object", "bool"]
-    ).columns.tolist()
-    list_corr.remove(var_remove)
-    mat_corr = df[list_corr].corr()
+    list_columns = df.columns.to_list()
+    var_remove = ['order_uuid', 'created_at']
+    list_columns = [i for i in list_columns if i not in var_remove]
+    mat_corr = df[list_columns].corr()
     mat_corr = mat_corr.reset_index()
-    # mat_corr.to_csv('matriz_cor.csv', sep=';', decimal=',')
+    mat_corr.to_csv('matriz_correlacion.csv', sep=';', decimal=',')
     l_list = []
-    for columns in [col for col in df[list_corr].columns if col != "index"]:
+    for columns in [col for col in df[list_columns].columns if col != "index"]:
         for j in range(mat_corr.shape[0]):
-            if mat_corr[columns].name != mat_corr["index"][j] and (
-                mat_corr[columns][j] >= 0.8 or mat_corr[columns][j] <= -0.8
-            ):
+            if (mat_corr[columns].name != mat_corr["index"][j]) and (
+                    mat_corr[columns][j] >= 0.8 or mat_corr[columns][j] <= -0.8):
                 short_list = [mat_corr[columns].name, mat_corr["index"][j]]
                 short_list.sort()
                 if short_list not in l_list:

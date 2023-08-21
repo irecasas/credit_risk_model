@@ -80,6 +80,25 @@ webencodings = "*"
 css = ["tinycss2 (>=1.1.0,<1.2)"]
 
 [[package]]
+name = "category-encoders"
+version = "2.6.2"
+description = "A collection of sklearn transformers to encode categorical variables as numeric"
+optional = false
+python-versions = "*"
+files = [
+    {file = "category_encoders-2.6.2-py2.py3-none-any.whl", hash = "sha256:5bec75df50f59da7c65b4beae27237d377150c9f0457a797430b5f5c27098855"},
+    {file = "category_encoders-2.6.2.tar.gz", hash = "sha256:f01abaa8e6f630756d67b81cbea673012b7759a78fdaada3a2c63f020333a5d6"},
+]
+
+[package.dependencies]
+numpy = ">=1.14.0"
+pandas = ">=1.0.5"
+patsy = ">=0.5.1"
+scikit-learn = ">=0.20.0"
+scipy = ">=1.0.0"
+statsmodels = ">=0.9.0"
+
+[[package]]
 name = "certifi"
 version = "2023.7.22"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1881,4 +1900,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "c4d00e712e3e9bae68b4fb5f2fa669c24a54e2cfbd42588d870a4e2ba8dcecca"
+content-hash = "64cd9551127445d151913e4efcd881ad4f436c8b6b2f72e91836d9461d6ff633"

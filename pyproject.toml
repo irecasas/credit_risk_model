@@ -28,6 +28,7 @@ pyarrow = "^12.0.1"
 seaborn = "^0.12.2"
 regex = "^2023.8.8"
 statsmodels = "^0.14.0"
+category-encoders = "^2.6.2"
 
 [[tool.poetry.source]]
 name = "PyPI"
