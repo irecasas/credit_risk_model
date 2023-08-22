@@ -1,6 +1,7 @@
 import os
 
 import pandas as pd
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.ensemble import RandomForestClassifier
 
 from feature_engineering import utils
@@ -128,3 +129,13 @@ x_train = x_train[x_colums]
 # else:
 #    print("Fail to reject the null hypothesis -
 #    There is no significant association between the treatment types and success rates.")
+
+
+predictors = ['sepal length (cm)', 'sepal width (cm)']
+outcome = 'target'
+X = df[predictors]
+y = df[outcome]
+iris_lda = LinearDiscriminantAnalysis()
+iris_lda.fit(X, y)
+print(iris_lda.intercept_, iris_lda.coef_)
+# [output]: (array([-18.73906174]), array([[ 11.43635631, -14.14302795]]))
