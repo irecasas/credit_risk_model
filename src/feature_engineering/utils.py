@@ -2,22 +2,20 @@ from statistics import mode
 
 import pandas as pd
 import statsmodels.api as sm
+from category_encoders.woe import WOEEncoder
+from sklearn import preprocessing
+from sklearn.preprocessing import OneHotEncoder
 
 from feature_engineering import constants
 
 
 def splitting_data(df: pd.DataFrame):
     """
-    Name: splitting_data
 
-    Description: Function to separate the dataset between:
-    training, validation and testing.
-
-    Parameters: - df <pandas.DataFrame>
-
-    Return: -
+    :param df:
+    :return:
     """
-    target = constants.target
+    target = constants.name_target
     df = df.loc[df["mes"] <= "2023-04"]
     train = df.loc[(df["mes"] >= "2020-01") & (df["mes"] <= "2022-08")]
     # Quito en entrenamiento las operaciones aceptadas
@@ -29,6 +27,7 @@ def splitting_data(df: pd.DataFrame):
             "cancelled_at",
             "egr_over30mob3",
             "egr_mob3",
+            "created_at"
         ],
         axis=1,
         inplace=True,
@@ -40,6 +39,7 @@ def splitting_data(df: pd.DataFrame):
             "cancelled_at",
             "egr_over30mob3",
             "egr_mob3",
+            "created_at"
         ],
         axis=1,
         inplace=True,
@@ -51,6 +51,7 @@ def splitting_data(df: pd.DataFrame):
             "cancelled_at",
             "egr_over30mob3",
             "egr_mob3",
+            "created_at"
         ],
         axis=1,
         inplace=True,
@@ -228,5 +229,62 @@ def get_stats(df: pd.DataFrame, df_target, list_colums: list):
     :param list_colums:
     :return:
     """
-    results = sm.OLS(df_target, df[list_colums]).fit()
+    y = list(df_target)
+    results = sm.OLS(y, df[list_colums]).fit()
     print(results.summary())
+
+
+def standardization_continuous_features(df: pd.DataFrame, dictionary: dict):
+    num_vars = []
+    for c in df:
+        if c in dictionary['numerical'] or c in dictionary['numerical_trans']:
+            num_vars.append(c)
+    df_num = df[num_vars]
+
+    # Min-Max Standardization
+    min_max_scaler = preprocessing.MinMaxScaler()
+    df_num_minmax = min_max_scaler.fit_transform(df_num)
+    df_num_minmax = pd.DataFrame(df_num_minmax, columns=df_num.columns)
+
+    df.drop(num_vars, axis=1, inplace=True)
+    df = df.reset_index(drop=True)
+    df = pd.merge(df, df_num_minmax, how='left', left_index=True, right_index=True)
+
+    return df
+
+
+def onehot_encoding(df: pd.DataFrame):
+
+    one_hot_vars = ['emailage_response__ip_userType',
+                    'emailage_response__status',
+                    'minfraud_response__ip_address__traits__user_type',
+                    'experian_OrigenScore__Codigo',
+                    'experian_Documento__TipoDocumento__Codigo',
+                    'emailage_response__ip_netSpeedCell',
+                    'emailage_response__domaincategory',
+                    'emailage_response__domainrelevantinfoID',
+                    'minfraud_response__ip_address__continent__code']
+
+    # One Hot Encoder
+    enc = OneHotEncoder()
+    enc_data = pd.DataFrame(enc.fit_transform(df[one_hot_vars]).toarray(),
+                            columns=enc.get_feature_names_out(one_hot_vars))
+    df.drop(one_hot_vars, axis=1, inplace=True)
+    df = pd.merge(df, enc_data, how='left', left_index=True, right_index=True)
+
+    return df
+
+def woe_encoder(df: pd.DataFrame, y_target):
+
+    woe_vars = ['emailage_response__fraudRisk', 'experian_InformacionDelphi__Nota',
+                'emailage_response__domainrisklevel',
+                'emailage_response__EAAdvice', 'industry_id', 'merchant_id', 'emailage_response__domainname',
+                'emailage_response__phonecarriername', 'minfraud_response__ip_address__traits__organization']
+    woe_encoder = WOEEncoder()
+    df = df.reset_index(drop=True)
+    y_target = y_target.reset_index(drop=True)
+    df_woe = woe_encoder.fit_transform(df[woe_vars], y_target)
+    df.drop(woe_vars, axis=1, inplace=True)
+    df = pd.merge(df, df_woe, how='left', left_index=True, right_index=True)
+
+    return df

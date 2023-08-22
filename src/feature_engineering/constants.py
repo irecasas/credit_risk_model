@@ -1,4 +1,4 @@
-target = "target"
+name_target = "target"
 
 var_drop = [
     "amount",
@@ -164,15 +164,30 @@ var_pending_analys = [
 
 models_vars = []
 
-delete_correlation = ['experian_ResumenCais__FechaMaximoImporteImpagado_difference_with_created',
-                      'experian_ResumenCais__FechaPeorSituacionPagoHistorica_difference_with_created',
-                      'experian_InformacionDelphi__Decil', 'experian_InformacionDelphi__Percentil',
-                      'experian_InformacionDelphi__Nota', 'emailage_response__domainExists_trans',
-                      'emailage__ip_reputation', 'emailage_response__ip_netSpeedCell',
-                      'emailage_response__EARiskBandID', 'emailage_response__fraudRisk',
+delete_correlation = ['experian_ResumenCais__ImporteImpagado', 'emailage_response__EAScore',
                       'experian_InformacionDelphi__ProbabilidadIncumplimientoPorScore',
-                      'experian_ResumenCais__ImporteImpagado',
-                      'experian_documento__tipodocumento__descripcion_trans',
-                      'emailage_response__domainrelevantinfoID',
-                      'emailage_response__firstVerificationDate_difference_with_created'
+                      'experian_InformacionDelphi__Percentil',
+                      'experian_InformacionDelphi__Decil'
                       ]
+
+feature_importance = [
+    'emailage_response__domainname', 'experian_ResumenCais__NumeroOperacionesImpagadas',
+    'principal', 'emailage_response__ip_risklevelid',
+    'experian_documento__tipodocumento__descripcion_trans',
+    'experian_ResumenCais__MaximoImporteImpagado',
+    'experian_ResumenCais__NumeroCuotasImpagadas',
+    'minfraud_response__risk_score',
+    'experian_ResumenCais__ImporteImpagado',
+    'experian_InformacionDelphi__Puntuacion',
+    'experian_InformacionDelphi__Decil',
+    'emailage_response__fraudRisk', 'annual_percentage_rate', 'downpayment_amount',
+    'experian_InformacionDelphi__ProbabilidadIncumplimientoPorScore',
+    'emailage_response__domain_creation_days', 'minfraud_response__ip_address__continent__code_nan',
+    'n_initial_instalments', 'emailage_response__phonecarriername', 'age',
+    'experian_InformacionDelphi__Percentil', 'minfraud_response__ip_address__traits__user_type_nan',
+    'emailage_response__first_seen_days', 'industry_id', 'emailage_response__EAAdvice',
+    'emailage_response__domainrisklevel', 'minfraud_response__ip_address__traits__user_type_business',
+    'merchant_id', 'emailage_response__ip_userType_dialup',
+    'minfraud_response__ip_address__traits__user_type_hosting',
+    'emailage_response__EAScore', 'order_uuid'
+]
