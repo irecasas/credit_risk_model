@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from feature_engineering.constants import var_drop, var_pending_analys
+from feature_engineering.constants import var_drop, var_pending_analysis
 from feature_engineering.new_features import (
     age_customer,
     email_features,
@@ -17,7 +17,7 @@ df = pd.read_parquet(os.path.join(cwd, path_data))
 
 # Drop features
 df.drop(var_drop, axis=1, inplace=True)
-df.drop(var_pending_analys, axis=1, inplace=True)
+df.drop(var_pending_analysis, axis=1, inplace=True)
 for feature_name in ("minfraud_response__ip_address__country__names",
                      "minfraud_response__ip_address__city__names",
                      "minfraud_response__ip_address__continent__names",

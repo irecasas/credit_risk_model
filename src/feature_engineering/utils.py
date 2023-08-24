@@ -1,9 +1,11 @@
 from statistics import mode
 
+import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from category_encoders.woe import WOEEncoder
 from sklearn import preprocessing
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import OneHotEncoder
 
 from feature_engineering import constants
@@ -16,8 +18,7 @@ def splitting_data(df: pd.DataFrame):
     :return:
     """
     target = constants.name_target
-    df = df.loc[df["mes"] <= "2023-04"]
-    train = df.loc[(df["mes"] >= "2020-01") & (df["mes"] <= "2022-08")]
+    train = df.loc[(df["mes"] >= "2020-01") & (df["mes"] <= "2022-10")]
     # Quito en entrenamiento las operaciones aceptadas
     # y canceladas para reducir falsos negativos
     train = train.loc[pd.isnull(train["cancelled_at"])]
@@ -32,19 +33,7 @@ def splitting_data(df: pd.DataFrame):
         axis=1,
         inplace=True,
     )
-    validation = df.loc[(df["mes"] >= "2022-09") & (df["mes"] <= "2023-01")]
-    validation.drop(
-        [
-            "mes",
-            "cancelled_at",
-            "egr_over30mob3",
-            "egr_mob3",
-            "created_at"
-        ],
-        axis=1,
-        inplace=True,
-    )
-    test = df.loc[(df["mes"] >= "2023-02")]
+    test = df.loc[(df["mes"] >= "2022-11")]
     test.drop(
         [
             "mes",
@@ -56,18 +45,15 @@ def splitting_data(df: pd.DataFrame):
         axis=1,
         inplace=True,
     )
-
     var_list = list(train.columns)
     var_list.remove(target)
 
     x_train = train[var_list]
     y_train = train[target]
-    x_val = validation[var_list]
-    y_val = validation[target]
     x_test = test[var_list]
     y_test = test[target]
 
-    return x_train, y_train, x_test, y_test, x_val, y_val
+    return x_train, y_train, x_test, y_test
 
 
 def initial_cleaning(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -274,17 +260,67 @@ def onehot_encoding(df: pd.DataFrame):
 
     return df
 
-def woe_encoder(df: pd.DataFrame, y_target):
 
+def woe_encoder(df: pd.DataFrame, y_target, df_validation: pd.DataFrame):
     woe_vars = ['emailage_response__fraudRisk', 'experian_InformacionDelphi__Nota',
                 'emailage_response__domainrisklevel',
                 'emailage_response__EAAdvice', 'industry_id', 'merchant_id', 'emailage_response__domainname',
                 'emailage_response__phonecarriername', 'minfraud_response__ip_address__traits__organization']
     woe_encoder = WOEEncoder()
+
     df = df.reset_index(drop=True)
     y_target = y_target.reset_index(drop=True)
-    df_woe = woe_encoder.fit_transform(df[woe_vars], y_target)
-    df.drop(woe_vars, axis=1, inplace=True)
-    df = pd.merge(df, df_woe, how='left', left_index=True, right_index=True)
+    df_validation = df_validation.reset_index(drop=True)
 
-    return df
+    df_woe = woe_encoder.fit_transform(df[woe_vars], y_target)
+    df_woe_validation = woe_encoder.transform(df_validation[woe_vars])
+
+    df.drop(woe_vars, axis=1, inplace=True)
+    df_validation.drop(woe_vars, axis=1, inplace=True)
+
+    df = pd.merge(df, df_woe, how='left', left_index=True, right_index=True)
+    df_validation = pd.merge(df_validation, df_woe_validation, how='left', left_index=True, right_index=True)
+
+    return df, df_validation
+
+
+def iv_woe(data, target, bins=10):
+    # Empty Dataframe
+    newDF, woeDF = pd.DataFrame(), pd.DataFrame()
+
+    # Extract Column Names
+    cols = data.columns
+
+    # Run WOE and IV on all the independent variables
+    for ivars in cols[~cols.isin([target])]:
+        if (data[ivars].dtype.kind in 'bifc') and (len(np.unique(data[ivars])) > 10):
+            binned_x = pd.qcut(data[ivars], bins, duplicates='drop')
+            d0 = pd.DataFrame({'x': binned_x, 'y': data[target]})
+        else:
+            d0 = pd.DataFrame({'x': data[ivars], 'y': data[target]})
+        d = d0.groupby("x", as_index=False).agg({"y": ["count", "sum"]})
+        d.columns = ['Cutoff', 'N', 'Events']
+        d['% of Events'] = np.maximum(d['Events'], 0.5) / d['Events'].sum()
+        d['Non-Events'] = d['N'] - d['Events']
+        d['% of Non-Events'] = np.maximum(d['Non-Events'], 0.5) / d['Non-Events'].sum()
+        d['WoE'] = np.log(d['% of Events'] / d['% of Non-Events'])
+        d['IV'] = d['WoE'] * (d['% of Events'] - d['% of Non-Events'])
+        d.insert(loc=0, column='Variable', value=ivars)
+        print("Information value of " + ivars + " is " + str(round(d['IV'].sum(), 6)))
+        temp = pd.DataFrame({"Variable": [ivars], "IV": [d['IV'].sum()]}, columns=["Variable", "IV"])
+        newDF = pd.concat([newDF, temp], axis=0)
+        woeDF = pd.concat([woeDF, d], axis=0)
+
+    return newDF, woeDF
+
+
+def feature_selection_rf(df: pd.DataFrame, features, y_target):
+    rf = RandomForestClassifier(n_estimators=500, n_jobs=1, max_depth=10).fit(df[features], y_target)
+    rf_vip = pd.DataFrame(list(zip(df.columns, rf.feature_importances_)),
+                          columns=['variables', 'importance']). \
+        sort_values(by=['importance'], ascending=False, axis=0).set_index('variables')
+    feature_importance = rf_vip.loc[rf_vip.importance >= 0.01]
+    feature_importance = list(feature_importance.index)
+    feature_importance.append('order_uuid')
+
+    return feature_importance
