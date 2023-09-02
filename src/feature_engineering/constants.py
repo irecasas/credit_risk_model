@@ -91,7 +91,8 @@ var_drop = [
     "experian_@xmlns",
     "experian_REFERENCIA_CONSULTA",
     "experian_Documento__NumeroDocumento",
-    "uuid_x"
+    "uuid_x",
+    "iovation_device__browser__timezone"
 ]
 
 # Created high risk industry
@@ -160,14 +161,42 @@ var_pending_analysis = [
     'experian_Documento__PaisDocumento__Codigo',
     'experian_ResumenCais__FechaUltimaActualizacion',
     'experian_OrigenScore__Descripcion',
-    'experian_Documento__PaisDocumento__Descripcion'
+    'experian_Documento__PaisDocumento__Descripcion',
+    'iovation_statedIp__ipLocation__city',
+    'iovation_statedIp__ipLocation__country',
+    'iovation_statedIp__ipLocation__countryCode',
+    'iovation_statedIp__ipLocation__latitude',
+    'iovation_statedIp__ipLocation__longitude',
+    'iovation_statedIp__ipLocation__region',
+    'iovation_realIp__ipLocation__city',
+    'iovation_realIp__ipLocation__country',
+    'iovation_realIp__ipLocation__countryCode',
+    'iovation_realIp__ipLocation__latitude',
+    'iovation_realIp__ipLocation__longitude',
+    'iovation_realIp__ipLocation__region',
+    'iovation_realIp__address',
+    'iovation_statedIp__address',
+    'iovation_device__browser__flash__installed',
+    'iovation_device__browser__flash__version',
+    'iovation_realIp__parentOrganization',
+    'iovation_realIp__isp',
+    'iovation_statedIp__parentOrganization',
+    'iovation_statedIp__source',
+    'iovation_statedIp__isp',
+    'iovation_device__screen',
+    'iovation_device__browser__version',
+    'iovation_device__browser__language',
+    'iovation_device__browser__configuredLanguage',
+    'iovation_device__blackboxMetadata__timestamp',
+    'iovation_device__alias',
+    'iovation_device__firstSeen',
+    'iovation_statedIp__botnet__lastSeen',
+    'iovation_realIp__botnet__lastSeen'
 ]
 
-delete_correlation = ['experian_ResumenCais__ImporteImpagado', 'emailage_response__EAScore',
-                      'experian_InformacionDelphi__ProbabilidadIncumplimientoPorScore',
-                      'experian_InformacionDelphi__Percentil',
-                      'experian_InformacionDelphi__Decil'
-                      ]
+delete_correlation = ['experian_InformacionDelphi__Decil',
+                      'emailage_response__firstVerificationDate_difference_with_created',
+                      'emailage_response__EAScore']
 
 feature_importance = ['emailage_response__domainname',
                       'experian_ResumenCais__NumeroOperacionesImpagadas',
@@ -194,3 +223,24 @@ feature_importance = ['emailage_response__domainname',
                       'minfraud_response__ip_address__traits__user_type_business',
                       'minfraud_response__ip_address__traits__user_type_hosting',
                       'order_uuid']
+
+features_remove = ['iovation_device__browser__type_MAXBROWSER',
+                   'emailage_response__domaincategory_Arts',
+                   'emailage_response__domaincategory_Real Estate',
+                   'emailage_response__domaincategory_Facilities Services',
+                   'emailage_response__domaincategory_Internet Ecosystem Services',
+                   'emailage_response__domaincategory_Online Information Management',
+                   'emailage_response__domaincategory_Utility',
+                   'emailage_response__ip_netSpeedCell_cable',
+                   'emailage_response__ip_netSpeedCell_mobile',
+                   'emailage_response__domaincategory_Tech0logy',
+                   'emailage_response__domaincategory_Other',
+                   'emailage_response__domaincategory_Technology, Businesses & Services (General)',
+                   'emailage_response__domaincategory_Mail',
+                   'emailage_response__ip_netSpeedCell_wireless',
+                   'emailage_response__ip_netSpeedCell_t1',
+                   'emailage_response__domaincategory_Construction ',
+                   'emailage_response__domainrelevantinfoID_537.0',
+                   'emailage_response__ip_netSpeedCell_satellite',
+                   'emailage_response__ip_netSpeedCell_xdsl',
+                   'emailage_response__domaincategory_Malware Distribution Point']
