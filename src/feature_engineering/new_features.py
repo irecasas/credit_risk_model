@@ -16,6 +16,21 @@ def age_customer(df: pd.DataFrame, date_birthday: str, date_init: str):
     df.drop([date_birthday], axis=1, inplace=True)
 
 
+def time_reference(df: pd.DataFrame, created):
+    df['hour'] = pd.to_datetime(df[created]).dt.hour
+
+
+def industries(df: pd.DataFrame):
+    df['high_risk_industry'] = df.apply(lambda row: 1 if
+                                        (row['industry_id'] == '2') or (row['industry_id'] == '3')
+                                        or (row['industry_id'] == '6') or (row['industry_id'] == '12')
+                                        or (row['industry_id'] == '13') or (row['industry_id'] == '16')
+                                        or (row['industry_id'] == '18') or (row['industry_id'] == '19')
+                                        or (row['industry_id'] == '23') or (row['industry_id'] == '25')
+                                        or (row['industry_id'] == '26') or (row['industry_id'] == '29')
+                                        else 0, axis=1)
+
+
 def email_features(df: pd.DataFrame):
     # Data features
     for date_feature_name in (
@@ -43,12 +58,9 @@ def email_features(df: pd.DataFrame):
         if binary_feature_name in df:
             engineered_feature = f'{binary_feature_name}_trans'
             df[engineered_feature] = 0
-            df[engineered_feature] = df[[binary_feature_name]].apply(lambda row: 1 if (
-                row[
-                    binary_feature_name] == 'Yes') or (
-                row[
-                    binary_feature_name] == 'True') else 0,
-                axis=1)
+            df[engineered_feature] = df[[binary_feature_name]]\
+                .apply(lambda row: 1 if (row[binary_feature_name] == 'Yes')
+                       or (row[binary_feature_name] == 'True') else 0, axis=1)
             df.drop([binary_feature_name], axis=1, inplace=True)
 
     # Email feature
@@ -111,12 +123,9 @@ def minfraud_features(df: pd.DataFrame):
         if binary_feature_name in df:
             engineered_feature_name = f'{binary_feature_name}_trans'
             df[engineered_feature_name] = 0
-            df[engineered_feature_name] = df[[binary_feature_name]].apply(lambda row: 1 if (
-                row[
-                    binary_feature_name] == 'Yes') or (
-                row[
-                    binary_feature_name] == 'True') else 0,
-                axis=1)
+            df[engineered_feature_name] = df[[binary_feature_name]]\
+                .apply(lambda row: 1 if (row[binary_feature_name] == 'Yes')
+                       or (row[binary_feature_name] == 'True') else 0, axis=1)
             df.drop([binary_feature_name], axis=1, inplace=True)
 
 
@@ -148,3 +157,15 @@ def experian_features(df: pd.DataFrame):
                 (row['created_at'] >= row[date_feature_name]) and (
                     row[date_feature_name] != pd.to_datetime('1800-01-01')) else 0, axis=1)
             df.drop([date_feature_name], axis=1, inplace=True)
+
+
+def iovation_features(df: pd.DataFrame):
+    # Binary features
+    for binary_feature in ('iovation_device__browser__cookiesEnabled', 'iovation_device__isNew'):
+        if binary_feature in df:
+            engineered_feature_name = f'{binary_feature}_trans'
+            df[engineered_feature_name] = 0
+            df[engineered_feature_name] = df[[binary_feature]].\
+                apply(lambda row: 1 if (row[binary_feature] == 'Yes')
+                      or (row[binary_feature] == 'True') else 0, axis=1)
+            df.drop([binary_feature], axis=1, inplace=True)
