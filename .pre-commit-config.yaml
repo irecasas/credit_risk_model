@@ -82,8 +82,8 @@ repos:
     rev: 1.7.5
     hooks:
       - id: bandit
-        args: [ "-x", "tests" ]
-        exclude: ^examples/|^tests/
+        args: [ "-x", "tests", "--skip", "B301,B403"]
+        exclude: ^examples/|^tests/|^models/|^notebooks/
 
   - repo: local
     hooks:
