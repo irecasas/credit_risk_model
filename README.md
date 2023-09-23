@@ -48,7 +48,7 @@ https://confluence.publishing.tools/display/ResD/Project+Environment+Set+Up+-+Py
 ####  Docker
 Setup requires that you already have docker installed on your machine.
 
-Build the image with `docker build -t ds-model-fraud-risk .`
+Build the image with `docker build -t credit_risk_model .`
 
 ## Additional resources
 TODO
