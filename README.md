@@ -1,5 +1,5 @@
-# DS Model Fraud Risk
-Repositorio centralizado de feature engineering para los modelos.
+# Credit Risk Model
+Repository containing the study conducted on the comparison of different credit rating modelling.
 
 ## Requirements
 * poetry
@@ -9,24 +9,31 @@ Repositorio centralizado de feature engineering para los modelos.
 ## Project Structure
 ```
 .
-└── ds-model-fraud-risk
+└── credit_risk_model
     ├── Dockerfile
     ├── README.md
     ├── data
-    │   ├── preprocessed
-    │   │   └── sample_data.csv
-    │   └── raw
-    │       └── sample_data.csv
-    ├── notebooks
-    │   └── sample.ipynb
+        ├── preprocessed
+        └── raw
+    ├── models
+    ├── poetry.lock
     ├── pyproject.toml
     ├── src
-    │   └── ds_core
-    │       └── preprocessing
-    │           └── process.py
+    │    ├── feature_engineering
+    │    │  ├── 00.create_dataframe.py
+    │    │  ├── 01.clean_data.py
+    │    │  ├── __init__.py
+    │    │  ├── constants.py
+    │    │  ├── new_features.py
+    │    │  └── utils.py
+    │    └── work_model
+    │       ├── 02.credit_scoring.py
+    │       ├── 03.neural_network.py
+    │       ├── 04.neural_network.py
+    │       └── dic_models.py
     └── tests
-        └── test_preprocessing
-            └── test_process.py
+
+
 ```
 
 ## Setup
@@ -46,5 +53,3 @@ Build the image with `docker build -t ds-model-fraud-risk .`
 ## Additional resources
 TODO
 
-## Contact
-* irene.casas@aplazame.com
