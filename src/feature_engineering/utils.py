@@ -1,3 +1,4 @@
+import os.path
 import pickle
 from statistics import mode
 
@@ -431,6 +432,9 @@ def open_model(path, model, nombre_modelo, num_ejecucion):
     :param num_ejecucion:
     :return:
     """
+    if path[-1] != os.path.sep:
+        path = path + os.path.sep
+
     pkl = open(path + model + '_' + nombre_modelo + '_' + str(num_ejecucion) + '.pkl', 'rb')
     model = pickle.load(pkl)
     pkl.close()
