@@ -65,12 +65,16 @@ Para ejecutar los resultados presentados en la memoria del TFM ejecutar: `python
 
 ### LRN
 
-La ejecución del siguiente comando conlleva el entrenamiento de nuevo del modelo, pues el objeto no fue guardado.
+La ejecución del siguiente comando supone el entrenamiento de nuevo del modelo, pues el objeto no fue guardado.
 Para ejecutar los resultados presentados en la memoria del TFM ejecutar: `python src/main.py --model_type lrn`
 
 ### MLP
 
+La ejecución del siguiente comando supone el entrenamiento de nuevo del modelo, pues el objeto no fue guardado.
+Para ejecutar los resultados presentados en la memoria del TFM ejecutar: `python src/main.py --model_type mlp`
+
 ### ResNet
 
+La ejecución del siguiente comando supone el entrenamiento de nuevo del modelo, pues el objeto no fue guardado.
 Para ejecutar los resultados presentados en la memoria del TFM ejecutar: `python src/main.py --model_type res`
 
