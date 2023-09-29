@@ -31,6 +31,8 @@ statsmodels = "^0.14.0"
 category-encoders = "^2.6.2"
 catboost = "^1.2.1"
 tensorflow = "^2.13.0"
+mlxtend = "^0.22.0"
+keras = "^2.14.0"
 
 [[tool.poetry.source]]
 name = "PyPI"
