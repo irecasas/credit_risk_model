@@ -21,6 +21,8 @@ df.drop(['uuid_y', 'Unnamed: 0'], axis=1, inplace=True)
 # Delete months in which I do not have any targets
 df = df.loc[(df.mes != '2023-05') & (df.mes != '2023-06')]
 
+a = df.dtypes
+a.to_csv('borrar.csv', sep=';')
 # INITIAL CLEANING
 # First cleaning data
 df = initial_cleaning(df)

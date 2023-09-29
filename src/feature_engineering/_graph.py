@@ -9,7 +9,6 @@ cwd = "/Users/irene.casas/PycharmProjects/credit_risk_model/"
 path_data = "data/raw/dataset_total_2020_2023_raw.parquet"
 df = pd.read_csv(os.path.join(cwd, path_data), low_memory=False)
 df.drop(['uuid_y', 'Unnamed: 0'], axis=1, inplace=True)
-# Quito los meses que aún no tengo target
 df = df.loc[(df.mes != '2023-05') & (df.mes != '2023-06')]
 
 
