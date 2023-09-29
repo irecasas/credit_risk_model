@@ -21,7 +21,7 @@ test = "python -m unittest discover tests"
 "coverage:report:html" = "coverage html"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = ">=3.9,<3.11"
 scikit-learn = "^1.2.2"
 pandas = "1.2.3"
 pyarrow = "^12.0.1"
@@ -30,6 +30,7 @@ regex = "^2023.8.8"
 statsmodels = "^0.14.0"
 category-encoders = "^2.6.2"
 catboost = "^1.2.1"
+tensorflow = "^2.13.0"
 
 [[tool.poetry.source]]
 name = "PyPI"

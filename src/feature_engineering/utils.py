@@ -14,7 +14,7 @@ from feature_engineering import constants
 
 def splitting_data(df: pd.DataFrame):
     """
-
+    function to separate training set and test set
     :param df:
     :return:
     """
@@ -61,9 +61,9 @@ def splitting_data(df: pd.DataFrame):
 
 def initial_cleaning(dataframe: pd.DataFrame) -> pd.DataFrame:
     """
-
+    Function that removes columns with unique values or with more than 95% of nulls
     :param dataframe:
-    :return:
+    :return: dataframe
     """
 
     a = dataframe.shape[0]
@@ -150,11 +150,7 @@ def dtypes_selector(df: pd.DataFrame) -> dict:
                   'emailage_response__phonecarriername',
                   'emailage_response__domainrisklevel', 'experian_OrigenScore__Codigo',
                   'emailage_response__domainrelevantinfoID',
-                  'experian_Documento__TipoDocumento__Codigo',
-                  'iovation_device__type', 'iovation_device__browser__type',
-                  'iovation_device__os', 'iovation_realIp__source',
-                  'iovation_device__blackboxMetadata__age',
-                  'iovation_ruleResults__rulesMatched'],
+                  'experian_Documento__TipoDocumento__Codigo'],
         numerical=['minfraud_response__risk_score', 'emailage_response__ip_risklevelid',
                    'experian_InformacionDelphi__Percentil',
                    'experian_ResumenCais__NumeroCuotasImpagadas',
@@ -206,13 +202,22 @@ def dtypes_selector(df: pd.DataFrame) -> dict:
 
 
 def missing_values(df: pd.DataFrame, dict: dict) -> pd.DataFrame:
+    """
+    Function to treat nulls according to the variable type
+
+    :param df:
+    :param dict:
+    :return:
+    """
     list_columns = df.columns.to_list()
     for c in list_columns:
         if c in dict["boolean"]:
             df[c] = df[c].astype("object").fillna("0").astype(int)
             df[c] = df[c].fillna(0).astype(int)
         elif (c in dict["numerical"]) or \
-                (c in ['iovation_device__blackboxMetadata__age', 'iovation_ruleResults__rulesMatched']):
+                (c in ['iovation_device__blackboxMetadata__age', 'iovation_ruleResults__rulesMatched',
+                       'experian_OrigenScore__Codigo', 'emailage_response__domainrelevantinfoID',
+                       'experian_Documento__TipoDocumento__Codigo']):
             df[c] = df[c].astype(float)
             inf_mode = mode(df[c])
             df[c] = df[c].fillna(inf_mode)
@@ -226,10 +231,9 @@ def missing_values(df: pd.DataFrame, dict: dict) -> pd.DataFrame:
 
 def corr_matrix(df: pd.DataFrame):
     """
-    :type dict: object
+    function to apply the correlation matrix
     :param df:
-    :param dict:
-    :return:
+    :return: list:
     """
     list_columns = df.columns.to_list()
     var_remove = ['order_uuid', 'created_at']
@@ -251,7 +255,7 @@ def corr_matrix(df: pd.DataFrame):
 
 def get_stats(df: pd.DataFrame, df_target, list_colums: list):
     """
-
+    function to apply the stepwise method
     :param df:
     :param df_target:
     :param list_colums:
@@ -263,6 +267,12 @@ def get_stats(df: pd.DataFrame, df_target, list_colums: list):
 
 
 def standardization_continuous_features(df: pd.DataFrame, dictionary: dict):
+    """
+    data standardisation function. The standardisation is performed with the min-max method.
+    :param df:
+    :param dictionary:
+    :return:
+    """
     num_vars = []
     for c in df:
         if c in dictionary['numerical'] or c in dictionary['numerical_trans']:
@@ -303,11 +313,26 @@ def onehot_encoding(df: pd.DataFrame):
 
 
 def woe_encoder(df: pd.DataFrame, y_target, df_validation: pd.DataFrame):
-    woe_vars = ['emailage_response__fraudRisk', 'experian_InformacionDelphi__Nota',
-                'emailage_response__domainrisklevel',
-                'emailage_response__EAAdvice', 'industry_id', 'merchant_id', 'emailage_response__domainname',
-                'emailage_response__phonecarriername', 'minfraud_response__ip_address__traits__organization',
-                'minfraud_response__ip_address__traits__user_type']
+    """
+    function to implement the WOE encoder method
+    :param df:
+    :param y_target:
+    :param df_validation:
+    :return:
+    """
+    woe_vars = ['emailage_response__status', 'emailage_response__fraudRisk',
+                'minfraud_response__ip_address__traits__user_type',
+                'emailage_response__ip_netSpeedCell', 'emailage_response__ip_userType',
+                'emailage_response__domaincategory',
+                'minfraud_response__ip_address__traits__organization',
+                'experian_InformacionDelphi__Nota',
+                'emailage_response__domainname', 'emailage_response__EAAdvice', 'merchant_id',
+                'industry_id',
+                'minfraud_response__ip_address__continent__code',
+                'emailage_response__phonecarriername',
+                'emailage_response__domainrisklevel', 'experian_OrigenScore__Codigo',
+                'emailage_response__domainrelevantinfoID',
+                'experian_Documento__TipoDocumento__Codigo']
     woe_encoder = WOEEncoder()
 
     df = df.reset_index(drop=True)
@@ -327,6 +352,13 @@ def woe_encoder(df: pd.DataFrame, y_target, df_validation: pd.DataFrame):
 
 
 def iv_woe(data, target, bins=10):
+    """
+    function to calculate the information value of the features
+    :param data:
+    :param target:
+    :param bins:
+    :return:
+    """
     # Empty Dataframe
     newDF, woeDF = pd.DataFrame(), pd.DataFrame()
 
@@ -357,6 +389,13 @@ def iv_woe(data, target, bins=10):
 
 
 def feature_selection_rf(df: pd.DataFrame, features, y_target):
+    """
+    function to select the most important features after applying Random Forest model
+    :param df:
+    :param features:
+    :param y_target:
+    :return:
+    """
     rf = RandomForestClassifier(n_estimators=500, n_jobs=1, max_depth=10).fit(df[features], y_target)
     rf_vip = pd.DataFrame(list(zip(df.columns, rf.feature_importances_)),
                           columns=['variables', 'importance']). \
@@ -369,12 +408,29 @@ def feature_selection_rf(df: pd.DataFrame, features, y_target):
 
 
 def save_model(path, model, nombre_modelo, num_ejecucion, estimator):
+    """
+    function to save the model
+    :param path:
+    :param model:
+    :param nombre_modelo:
+    :param num_ejecucion:
+    :param estimator:
+    :return:
+    """
     output = open(path + model + '_' + nombre_modelo + '_' + str(num_ejecucion) + '.pkl', 'wb')
     pickle.dump(estimator, output, -1)
     output.close()
 
 
 def open_model(path, model, nombre_modelo, num_ejecucion):
+    """
+    function to open the model
+    :param path:
+    :param model:
+    :param nombre_modelo:
+    :param num_ejecucion:
+    :return:
+    """
     pkl = open(path + model + '_' + nombre_modelo + '_' + str(num_ejecucion) + '.pkl', 'rb')
     model = pickle.load(pkl)
     pkl.close()

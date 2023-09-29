@@ -194,35 +194,14 @@ var_pending_analysis = [
     'iovation_realIp__botnet__lastSeen'
 ]
 
-delete_correlation = ['experian_InformacionDelphi__Decil',
-                      'emailage_response__firstVerificationDate_difference_with_created',
-                      'emailage_response__EAScore']
-
-feature_importance = ['emailage_response__domainname',
-                      'experian_ResumenCais__NumeroOperacionesImpagadas',
-                      'principal', 'emailage_response__ip_risklevelid',
-                      'experian_ResumenCais__MaximoImporteImpagado',
-                      'experian_documento__tipodocumento__descripcion_trans',
+delete_correlation = ['experian_ResumenCais__MaximoImporteImpagado',
                       'experian_InformacionDelphi__Puntuacion',
-                      'experian_ResumenCais__NumeroCuotasImpagadas',
-                      'experian_ResumenCais__ImporteImpagado',
-                      'experian_InformacionDelphi__Decil', 'downpayment_amount',
-                      'minfraud_response__risk_score',
-                      'annual_percentage_rate', 'emailage_response__fraudRisk',
-                      'n_initial_instalments', 'age',
-                      'experian_InformacionDelphi__ProbabilidadIncumplimientoPorScore',
-                      'emailage_response__domain_creation_days',
-                      'minfraud_response__ip_address__continent__code_nan',
-                      'emailage_response__phonecarriername',
-                      'experian_InformacionDelphi__Percentil',
-                      'minfraud_response__ip_address__traits__user_type_nan',
-                      'emailage_response__first_seen_days',
-                      'industry_id', 'emailage_response__EAAdvice', 'merchant_id',
-                      'emailage_response__EAScore',
-                      'emailage_response__domainrisklevel',
-                      'minfraud_response__ip_address__traits__user_type_business',
-                      'minfraud_response__ip_address__traits__user_type_hosting',
-                      'order_uuid']
+                      'experian_InformacionDelphi__Nota',
+                      'experian_InformacionDelphi__Decil',
+                      'emailage_response__firstVerificationDate_difference_with_created',
+                      'emailage_response__fraudRisk',
+                      'merchant_loanbook_timeline-diff_principal_lent']
+
 
 features_remove = ['iovation_device__browser__type_MAXBROWSER',
                    'emailage_response__domaincategory_Arts',

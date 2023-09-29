@@ -1,12 +1,13 @@
 # Credit Risk Model
-Repository containing the study conducted on the comparison of different credit rating modelling.
 
-## Requirements
+## Introducción
+Proyecto para comparar los resulatdos de varias familias de modelos.
+
+## Requerimientos
 * poetry
-* docker
-* python version 3.10.12
+* python version ^3.9
 
-## Project Structure
+## Estructura del proyecto
 ```
 .
 └── credit_risk_model
@@ -36,20 +37,29 @@ Repository containing the study conducted on the comparison of different credit 
 
 ```
 
-## Setup
-https://confluence.publishing.tools/display/ResD/Project+Environment+Set+Up+-+Pyenv+and+Poetry
-* `poe init`
+## Instalación
 
-### Tests
+En le directorio del proyecto abrimos un terminal y ejecutamos el comando `poetry install` para descargar e instalar todas las librerias necesarias en el entorno virtual que poetry generará automáticamente.
 
-#### Poe
-`poe test`
+## Uso
 
-####  Docker
-Setup requires that you already have docker installed on your machine.
+En el directorio del proyecto ejecutar el comando `poetry shell` para activar el entorno virtual con las dependencias instaladas.
+Según la tipología del modelo que se quiera ejectuar se deberán lanzar los siguientes comandos que devolverán el resultado por pantalla:
 
-Build the image with `docker build -t credit_risk_model .`
+### AD
 
-## Additional resources
-TODO
+### LR
+
+### SVM
+
+### RF
+
+### CB
+
+### LRN
+
+### MLP
+
+### ResNet
+
 
