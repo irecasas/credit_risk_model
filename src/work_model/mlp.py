@@ -27,7 +27,6 @@ def result_mlp():
     #    'activation': ['tanh', 'identity', 'logistic', 'relu'],
     #    'learning_rate_init': [0.0001, 0.01]
     # }
-    cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=10, random_state=1)
 
     parameters = {
         'hidden_layer_sizes': (500, 400, 300),
